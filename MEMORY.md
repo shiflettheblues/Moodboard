@@ -46,7 +46,8 @@ WhatsApp (you/wife) → Twilio → Flask webhook (app.py) → commands.py → st
 ## Environment Variables (.env)
 ```
 TWILIO_ACCOUNT_SID=ACxxxxx
-TWILIO_AUTH_TOKEN=xxxxx
+TWILIO_API_KEY_SID=SKxxxxx
+TWILIO_API_KEY_SECRET=xxxxx
 TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
 BASE_URL=https://your-ngrok-url.ngrok.io
 ALLOWED_NUMBERS=whatsapp:+1XXXXXXXXXX,whatsapp:+1XXXXXXXXXX

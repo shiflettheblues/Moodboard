@@ -8,7 +8,7 @@ import config
 
 
 def get_client():
-    return Client(config.TWILIO_SID, config.TWILIO_TOKEN)
+    return Client(config.TWILIO_API_KEY_SID, config.TWILIO_API_KEY_SECRET, config.TWILIO_ACCOUNT_SID)
 
 
 def send_message(to, body):
@@ -43,7 +43,7 @@ def download_media(media_url, board_id):
 
     response = requests.get(
         media_url,
-        auth=(config.TWILIO_SID, config.TWILIO_TOKEN),
+        auth=(config.TWILIO_API_KEY_SID, config.TWILIO_API_KEY_SECRET),
         timeout=30,
     )
     response.raise_for_status()
