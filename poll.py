@@ -55,21 +55,14 @@ def send_reply(client, to, reply):
 def poll_loop():
     client = get_client()
     seen_sids = set()
-    start_time = datetime.now(timezone.utc)
+    # Process messages received in the last 5 minutes (catch msgs from downtime)
+    from datetime import timedelta
+    start_time = datetime.now(timezone.utc) - timedelta(minutes=5)
 
     print(f"Moodboard bot started (polling mode)")
     print(f"Watching for messages to {config.TWILIO_NUMBER}")
     print(f"Allowed numbers: {config.ALLOWED_NUMBERS or 'all'}")
     print(f"Polling every {POLL_INTERVAL}s — press Ctrl+C to stop\n")
-
-    # Pre-populate seen_sids with existing messages so we don't replay history
-    try:
-        existing = client.messages.list(to=config.TWILIO_NUMBER, limit=50)
-        for msg in existing:
-            seen_sids.add(msg.sid)
-        print(f"Skipping {len(seen_sids)} existing messages")
-    except Exception as e:
-        print(f"Warning: couldn't fetch existing messages: {e}")
 
     while True:
         try:
