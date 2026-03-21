@@ -14,6 +14,7 @@ import sys
 import os
 from datetime import datetime, timezone
 
+import requests
 from twilio.rest import Client
 
 import config
@@ -32,17 +33,48 @@ def get_client():
     )
 
 
+def upload_image(file_path):
+    """Upload a local image to catbox.moe and return the public URL."""
+    with open(file_path, "rb") as f:
+        resp = requests.post(
+            "https://catbox.moe/user/api.php",
+            data={"reqtype": "fileupload"},
+            files={"fileToUpload": ("collage.jpg", f, "image/jpeg")},
+        )
+    resp.raise_for_status()
+    url = resp.text.strip()
+    print(f"  Uploaded collage -> {url}")
+    return url
+
+
 def send_reply(client, to, reply):
     """Send a reply, handling text and image responses."""
     if "__IMAGE__" in reply:
         parts = reply.split("__IMAGE__")
-        image_url = parts[1]
+        local_url = parts[1]
         caption = parts[2] if len(parts) > 2 else ""
+
+        # The URL from commands.py points to a local server that isn't running.
+        # Resolve to the actual file path and upload to a public host.
+        # URL format: {BASE_URL}/media/{board_id}/collage.jpg
+        try:
+            path_part = local_url.split("/media/", 1)[1]  # e.g. "1/collage.jpg"
+            local_path = os.path.join(config.IMAGES_DIR, path_part)
+            public_url = upload_image(local_path)
+        except Exception as e:
+            print(f"  Upload failed: {e}")
+            client.messages.create(
+                from_=config.TWILIO_NUMBER,
+                to=to,
+                body="Sorry, couldn't upload the collage image. Try again!",
+            )
+            return
+
         client.messages.create(
             from_=config.TWILIO_NUMBER,
             to=to,
             body=caption,
-            media_url=[image_url],
+            media_url=[public_url],
         )
     else:
         client.messages.create(
